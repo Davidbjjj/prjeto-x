@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Image, 
-  SafeAreaView, 
-  ActivityIndicator, 
-  Alert 
-} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { TouchableOpacity } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from "@react-navigation/native";
 import { jwtDecode } from 'jwt-decode';
-import { ImageSourcePropType } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ImageSourcePropType,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 interface UserData {
   email: string;
@@ -80,7 +80,7 @@ export default function Perfil() {
 
         // 4. Fazer requisição para obter dados do usuário
         const response = await fetch(
-          `http://localhost:8081/usuarios/email/${encodeURIComponent(tokenData.email)}`, 
+          `https://backnotas.onrender.com/usuarios/email/${encodeURIComponent(tokenData.email)}`, 
           {
             headers: {
               'Authorization': `Bearer ${token}`

@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import CustomInput from '../../components/CustomInput';
 import CustomButton from '@/components/CustomButton';
-import { useNavigation } from '@react-navigation/native';
-import axios from 'axios';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import CustomInput from '../../components/CustomInput';
 
 type CadastroScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CadastroEscola'>;
 

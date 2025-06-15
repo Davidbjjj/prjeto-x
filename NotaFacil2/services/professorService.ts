@@ -3,6 +3,7 @@ import axios from 'axios';
 const API_BASE_URL = 'https://backnotas.onrender.com';
 
 export interface Professor {
+  senha: string;
   id: string;
   nome: string;
   email: string;

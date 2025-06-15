@@ -1,19 +1,18 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { router } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { RootStackParamList } from '../navigation/types';
+
 
 export default function HeaderPerfil() {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
 
   return (
     <View style={styles.container}>
       <View style={styles.headerContent}>
         {/* Botão de Sobre (lado esquerdo) */}
         <TouchableOpacity 
-          onPress={() => navigation.navigate('Sobre')} 
+          onPress={() => router.replace('/Sobre/sobreScreen')} 
           style={styles.aboutButton}
         >
           <MaterialIcons name="info" size={26} color="#fff" />
@@ -21,11 +20,11 @@ export default function HeaderPerfil() {
 
         {/* Botão de Perfil (lado direito) */}
         <TouchableOpacity 
-          onPress={() => navigation.navigate('Perfil')}
+          onPress={() => router.replace('/Perfil/profile')}
           style={styles.profileButton}
         >
           <Image
-            source={require('../assets/pessoa.png')}
+            source={require('../../assets/pessoa.png')}
             style={styles.profileImage}
           />
           <MaterialIcons 

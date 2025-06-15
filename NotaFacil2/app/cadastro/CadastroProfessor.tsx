@@ -1,8 +1,6 @@
-import type { RootStackParamList } from '@/navigation/types';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import axios from 'axios';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -11,9 +9,8 @@ interface Escola {
   nome: string;
 }
 
-type CadastroScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CadastroProfessor'>;
 export default function CadastroProfessor() {
-    const [nome, setNome] = useState('');
+  const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [escolaSelecionada, setEscolaSelecionada] = useState('');
@@ -22,8 +19,6 @@ export default function CadastroProfessor() {
   const [mostrarDropdown, setMostrarDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [carregandoEscolas, setCarregandoEscolas] = useState(false);
-
-  const navigation = useNavigation<CadastroScreenNavigationProp>();
 
   useEffect(() => {
     carregarEscolas();
@@ -55,7 +50,7 @@ export default function CadastroProfessor() {
     }
   };
 
- const selecionarEscola = (escola: Escola) => {
+  const selecionarEscola = (escola: Escola) => {
     setEscolaSelecionada(escola.nome);
     setMostrarDropdown(false);
   };
@@ -89,14 +84,14 @@ export default function CadastroProfessor() {
       setSenha('');
       setEscolaSelecionada('');
 
-      navigation.navigate('LoginScreen');
+      // Redireciona para a tela de login usando expo-router
+      router.replace('/login/LoginScreen');
     } catch (error) {
       console.error(error);
       Alert.alert('Erro', 'Não foi possível cadastrar o professor.');
     } finally {
       setLoading(false);
     }
-    
   };
 
   return (
@@ -192,6 +187,7 @@ export default function CadastroProfessor() {
   );
 }
 
+// Mantenha os mesmos estilos da versão original
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -1,25 +1,33 @@
-import CustomButton from '@/components/CustomButton';
-import CustomInput from '@/components/CustomInput';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 export default function FormAluno() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
-  const [aceitoPoliticas, setAceitoPoliticas] = useState(false);  
+  const [aceitoPoliticas, setAceitoPoliticas] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const verificarToken = async () => {
       try {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await AsyncStorage.getItem('token');
         if (token) {
           console.log('Usuário já está logado');
-          router.replace('/login/LoginScreen');
         }
       } catch (err) {
         console.error('Erro ao verificar token:', err);
@@ -30,6 +38,8 @@ export default function FormAluno() {
   }, []);
 
   const handleCadastroAluno = async () => {
+    console.log('Função handleCadastroAluno chamada');
+
     if (!nome || !email || !senha || !confirmarSenha) {
       Alert.alert('Preencha todos os campos!');
       return;
@@ -59,34 +69,28 @@ export default function FormAluno() {
     };
 
     try {
+      console.log('Enviando dados para a API:', aluno);
       await axios.post('https://backnotas.onrender.com/alunos', aluno);
 
       const loginResponse = await axios.post('https://backnotas.onrender.com/auth/login', {
         email,
         senha,
       });
-      
-      const token = loginResponse.data.token || loginResponse.data.accessToken;
-      await AsyncStorage.setItem('authToken', token);
 
-      // Salvar role do usuário se existir
-      if (loginResponse.data.userDetails?.role) {
-        await AsyncStorage.setItem('userRole', loginResponse.data.userDetails.role);
-      }
+      const token = loginResponse.data.token || loginResponse.data.accessToken;
+      await AsyncStorage.setItem('token', token);
 
       Alert.alert('Cadastro e login realizados com sucesso!');
+
       setNome('');
       setEmail('');
       setSenha('');
       setConfirmarSenha('');
-      setAceitoPoliticas(false);  
+      setAceitoPoliticas(false);
 
-      // Redirecionar para a tela inicial usando expo-router
-      router.replace('/login/LoginScreen');
-
+      router.replace('/login/LoginScreen'); // ajuste conforme sua estrutura de pastas
     } catch (err: any) {
-      console.error('Erro:', err);
-
+      console.error('Erro ao cadastrar:', err.response?.data || err.message || err);
       if (err.response) {
         Alert.alert('Erro ao cadastrar', err.response.data.message || 'Tente novamente.');
       } else {
@@ -97,49 +101,52 @@ export default function FormAluno() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.form}>
           <Text style={styles.title}>Cadastro de Aluno</Text>
 
-          <CustomInput 
-            placeholder="Nome" 
-            value={nome} 
-            onChangeText={setNome} 
+          <TextInput
+            style={styles.input}
+            placeholder="Nome"
+            value={nome}
+            onChangeText={(text) => {
+              console.log('Nome digitado:', text);
+              setNome(text);
+            }}
           />
-
-          <CustomInput 
-            placeholder="Email" 
-            value={email} 
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={email}
             onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Senha"
+            secureTextEntry
+            value={senha}
+            onChangeText={setSenha}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Confirmar Senha"
+            secureTextEntry
+            value={confirmarSenha}
+            onChangeText={setConfirmarSenha}
           />
 
-          <CustomInput 
-            placeholder="Senha" 
-            secureTextEntry 
-            value={senha} 
-            onChangeText={setSenha} 
-          />
+          <TouchableOpacity onPress={() => setAceitoPoliticas(!aceitoPoliticas)}>
+            <Text style={styles.checkboxLabel}>
+              {aceitoPoliticas ? '☑' : '☐'} Aceito as políticas de privacidade
+            </Text>
+          </TouchableOpacity>
 
-          <CustomInput 
-            placeholder="Confirmar Senha" 
-            secureTextEntry 
-            value={confirmarSenha} 
-            onChangeText={setConfirmarSenha} 
-          />
-
-          <View style={styles.checkboxContainer}>
-            <Text style={styles.checkboxLabel}>Aceito as políticas de privacidade</Text>
-          </View>
-
-          <CustomButton 
-            title="Confirmar" 
-            onPress={handleCadastroAluno} 
-          />
+          <TouchableOpacity style={styles.button} onPress={handleCadastroAluno}>
+            <Text style={styles.buttonText}>Confirmar</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -168,12 +175,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: '#fff',
   },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 12,
+  input: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
   },
   checkboxLabel: {
     color: '#fff',
+    fontSize: 16,
+    marginBottom: 16,
+  },
+  button: {
+    backgroundColor: '#00cc66',
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 });
