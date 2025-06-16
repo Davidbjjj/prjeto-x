@@ -1,62 +1,105 @@
-import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 export default function RecuperacaoSenha() {
   const [codigo, setCodigo] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const handleRecuperarSenha = () => {
     if (!codigo) {
-      Alert.alert('Por favor, insira o código de recuperação!');
+      Alert.alert('Atenção', 'Por favor, insira o código de recuperação!');
       return;
     }
 
-    Alert.alert('Código verificado, agora você pode criar uma nova senha!');
-    // Redireciona para a tela de nova senha
-    router.push('/Nova Senha/NovaSenha');
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      Alert.alert('Sucesso', 'Código verificado, agora você pode criar uma nova senha!');
+      router.push('/NovaSenha/NovaSenha');
+    }, 1500);
   };
 
   const handleReenviarCodigo = () => {
-    Alert.alert('Código reenviado!');
-    // Lógica para reenviar o código
+    setResendLoading(true);
+    setTimeout(() => {
+      setResendLoading(false);
+      Alert.alert('Código reenviado!', 'Verifique seu e-mail novamente.');
+    }, 1000);
   };
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <View style={styles.card}>
-          <Text style={styles.title}>Código de recuperação</Text>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.content}>
+          <View style={styles.iconContainer}>
+            <MaterialIcons name="email" size={48} color="#fff" />
+          </View>
+
+          <Text style={styles.title}>Verifique seu e-mail</Text>
+          
           <Text style={styles.subtitle}>
-            Esqueceu sua senha? Não se preocupe, enviamos um código de recuperação para seu email. Digite-o e crie uma nova senha.
+            Enviamos um código de recuperação para o seu e-mail cadastrado. 
+            Por favor, insira o código abaixo para continuar.
           </Text>
 
-          <TextInput
-            style={styles.input}
-            value={codigo}
-            onChangeText={setCodigo}
-            keyboardType="numeric"
-            placeholder="Digite o código"
-            placeholderTextColor="#aaa"
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={codigo}
+              onChangeText={setCodigo}
+              keyboardType="number-pad"
+              placeholder="Digite o código de 6 dígitos"
+              placeholderTextColor="#aaa"
+              maxLength={6}
+              textAlign="center"
+            />
+          </View>
 
-          <TouchableOpacity onPress={handleRecuperarSenha}>
-            <LinearGradient
-              colors={['#001684', '#006EFF']}
-              style={styles.button}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={handleRecuperarSenha}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Text style={styles.buttonText}>Verificar Código</Text>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.resendContainer}>
+            <Text style={styles.resendText}>Não recebeu o código?</Text>
+            <TouchableOpacity 
+              onPress={handleReenviarCodigo}
+              disabled={resendLoading}
             >
-              <Text style={styles.buttonText}>Confirmar</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={handleReenviarCodigo}>
-            <Text style={styles.reenviar}>Reenviar código</Text>
-          </TouchableOpacity>
+              {resendLoading ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <Text style={styles.resendLink}>Reenviar código</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -65,64 +108,97 @@ export default function RecuperacaoSenha() {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: '#0477BF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 32,
+    flex: 1,
+    backgroundColor: '#0072CE', // Azul completo como fundo
   },
-  card: {
-    backgroundColor: '#03629C',
-    borderRadius: 16,
-    padding: 20,
-    width: '100%',
-    maxWidth: 400,
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  content: {
+    padding: 25,
     alignItems: 'center',
-    elevation: 4,
+  },
+  iconContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 30,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 16,
     textAlign: 'center',
+    marginBottom: 15,
   },
   subtitle: {
     fontSize: 16,
-    color: '#fff',
-    marginBottom: 20,
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
-    lineHeight: 22,
+    marginBottom: 30,
+    lineHeight: 24,
+    paddingHorizontal: 20,
+  },
+  inputContainer: {
+    width: '100%',
+    maxWidth: 300,
+    marginBottom: 30,
   },
   input: {
-    width: '100%',
-    padding: 12,
-    backgroundColor: '#f1f1f1',
-    borderRadius: 8,
-    marginBottom: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 12,
+    padding: 18,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0072CE',
     textAlign: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    fontSize: 16,
+    letterSpacing: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   button: {
-    paddingVertical: 14,
-    paddingHorizontal: 50,
-    borderRadius: 8,
+    backgroundColor: '#004BFF',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 40,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
+    width: '100%',
+    maxWidth: 300,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#FFF',
+    fontSize: 18,
     fontWeight: 'bold',
   },
-  reenviar: {
+  resendContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  resendText: {
+    color: 'rgba(255, 255, 255, 0.8)',
     fontSize: 14,
-    color: '#fff',
-    textAlign: 'center',
+  },
+  resendLink: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginLeft: 5,
     textDecorationLine: 'underline',
   },
 });

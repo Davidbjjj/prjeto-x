@@ -1,13 +1,15 @@
+// app/index.tsx
 import { Redirect } from 'expo-router';
-import { useAuth } from '../context/AuthContext'; // Opcional - se tiver autenticação
+import { useAuth } from '../context/AuthContext'; // Se estiver usando autenticação
 
 export default function Index() {
-  // Se você tiver verificação de autenticação
-  useAuth(); // Remove esta linha se não usar autenticação
-  
-  // Redireciona diretamente para a tela de login
-  return <Redirect href="/login/LoginScreen" />;
-  
-  // Se estiver usando autenticação, pode fazer assim:
-  // return user ? <Redirect href="/(tabs)/home" /> : <Redirect href="/login" />;
+  const { isAuthenticated } = useAuth();
+
+  // Se o usuário estiver autenticado, vai para a home (exemplo: /(tabs)/home)
+  // Senão, vai para o login
+  if (isAuthenticated) {
+    return <Redirect href="/Navegacao/disciplinas" />;
+  } else {
+    return <Redirect href="/Home/Home" />;
+  }
 }

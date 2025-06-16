@@ -14,11 +14,13 @@ export interface EscolaDetails extends BaseUserDetails {
 }
 
 export interface ProfessorDetails extends BaseUserDetails {
+  escola: string;
   escolaNome?: string;
   disciplinas: string[];
 }
 
 export interface AlunoDetails extends BaseUserDetails {
+  disciplinas: any;
   notas: Array<{
     disciplina: string;
     valor: number;

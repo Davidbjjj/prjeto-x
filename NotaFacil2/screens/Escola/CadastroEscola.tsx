@@ -57,9 +57,9 @@ export default function FormEscola() {
     };
 
     try {
-      await axios.post('https://backnotas.onrender.com/escolas', escola);
+      await axios.post('http://localhost:8080/escolas', escola);
 
-      const loginResponse = await axios.post('https://backnotas.onrender.com/escolas', {
+      const loginResponse = await axios.post('http://localhost:8080/escolas', {
         email,
         senha,
       });

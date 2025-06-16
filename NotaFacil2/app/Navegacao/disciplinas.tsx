@@ -1,7 +1,7 @@
-// screens/DisciplinasScreen.tsx
 import { MaterialIcons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getDisciplinas } from '../../services/disciplinaService';
 import { Disciplina } from '../../types/disciplina';
 
@@ -68,17 +68,24 @@ export default function DisciplinasScreen() {
           />
         }
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <MaterialIcons name="class" size={24} color="#007BFF" />
-              <Text style={styles.disciplinaNome}>{item.nome}</Text>
-            </View>
-            
-            <View style={styles.professorContainer}>
-              <MaterialIcons name="person" size={18} color="#666" />
-              <Text style={styles.professorText}>{item.professorNome}</Text>
-            </View>
-          </View>
+          <Link href={{
+            pathname: "/EventosDiciplina/EventosDisciplina",
+            params: { id: item.id, nome: item.nome }
+          }} asChild>
+            <TouchableOpacity>
+              <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <MaterialIcons name="class" size={24} color="#007BFF" />
+                  <Text style={styles.disciplinaNome}>{item.nome}</Text>
+                </View>
+                
+                <View style={styles.professorContainer}>
+                  <MaterialIcons name="person" size={18} color="#666" />
+                  <Text style={styles.professorText}>{item.professorNome}</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </Link>
         )}
         ListEmptyComponent={
           <Text style={styles.emptyText}>Nenhuma disciplina encontrada</Text>

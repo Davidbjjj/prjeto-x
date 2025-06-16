@@ -59,9 +59,9 @@ export default function FormAluno() {
     };
 
     try {
-      await axios.post('https://backnotas.onrender.com/alunos', aluno);
+      await axios.post('http://localhost:8080/alunos', aluno);
 
-      const loginResponse = await axios.post('https://backnotas.onrender.com/auth/login', {
+      const loginResponse = await axios.post('http://localhost:8080/auth/login', {
         email,
         senha,
       });

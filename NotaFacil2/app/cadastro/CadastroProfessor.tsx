@@ -1,8 +1,21 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 interface Escola {
   id: string;
@@ -27,7 +40,7 @@ export default function CadastroProfessor() {
   const carregarEscolas = async () => {
     try {
       setCarregandoEscolas(true);
-      const response = await axios.get('https://backnotas.onrender.com/escolas');
+      const response = await axios.get('http://localhost:8080/escolas');
       setEscolas(response.data);
       setEscolasFiltradas(response.data);
     } catch (error) {
@@ -71,7 +84,7 @@ export default function CadastroProfessor() {
     setLoading(true);
 
     try {
-      await axios.post('https://backnotas.onrender.com/professores', {
+      await axios.post('http://localhost:8080/professores', {
         nome,
         email,
         senha,
@@ -84,7 +97,6 @@ export default function CadastroProfessor() {
       setSenha('');
       setEscolaSelecionada('');
 
-      // Redireciona para a tela de login usando expo-router
       router.replace('/login/LoginScreen');
     } catch (error) {
       console.error(error);
@@ -96,23 +108,36 @@ export default function CadastroProfessor() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.form}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        <LinearGradient
+          colors={['#6E48AA', '#9D50BB']}
+          style={styles.header}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
           <Text style={styles.title}>Cadastro de Professor</Text>
+        </LinearGradient>
 
-          <Text style={styles.label}>Nome</Text>
+        <View style={styles.formContainer}>
+          <Text style={styles.label}>Nome Completo</Text>
           <TextInput
             style={styles.input}
+            placeholder="Digite seu nome completo"
             value={nome}
             onChangeText={setNome}
+            autoCapitalize="words"
           />
 
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>E-mail</Text>
           <TextInput
             style={styles.input}
+            placeholder="Digite seu e-mail"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -122,22 +147,26 @@ export default function CadastroProfessor() {
           <Text style={styles.label}>Senha</Text>
           <TextInput
             style={styles.input}
+            placeholder="Crie uma senha segura"
             value={senha}
             onChangeText={setSenha}
             secureTextEntry
           />
 
           <Text style={styles.label}>Escola</Text>
-          <View style={styles.escolaContainer}>
+          <View style={styles.dropdownContainer}>
             <View style={styles.inputContainer}>
               <TextInput
-                placeholder="Digite o nome da escola ou selecione"
-                style={styles.inputCombinado}
+                style={styles.dropdownInput}
+                placeholder="Selecione ou digite o nome da escola"
                 value={escolaSelecionada}
                 onChangeText={filtrarEscolas}
                 onFocus={() => setMostrarDropdown(true)}
               />
-              <TouchableOpacity onPress={toggleDropdown} style={styles.dropdownButton}>
+              <TouchableOpacity 
+                onPress={toggleDropdown} 
+                style={styles.dropdownButton}
+              >
                 <MaterialIcons
                   name={mostrarDropdown ? 'arrow-drop-up' : 'arrow-drop-down'}
                   size={24}
@@ -147,36 +176,35 @@ export default function CadastroProfessor() {
             </View>
 
             {carregandoEscolas && (
-              <ActivityIndicator size="small" style={styles.carregando} />
+              <ActivityIndicator size="small" color="#6E48AA" style={styles.loadingIndicator} />
             )}
 
             {mostrarDropdown && (
-              <View style={styles.dropdown}>
+              <View style={styles.dropdownList}>
                 <FlatList
                   data={escolasFiltradas}
                   keyExtractor={(item) => item.id}
                   renderItem={({ item }) => (
                     <TouchableOpacity
-                      style={styles.itemDropdown}
+                      style={styles.dropdownItem}
                       onPress={() => selecionarEscola(item)}
                     >
-                      <Text>{item.nome}</Text>
+                      <Text style={styles.dropdownItemText}>{item.nome}</Text>
                     </TouchableOpacity>
                   )}
                   keyboardShouldPersistTaps="always"
-                  style={styles.listaDropdown}
                 />
               </View>
             )}
           </View>
 
-          <TouchableOpacity
+          <TouchableOpacity 
+            style={styles.button} 
             onPress={handleCadastro}
-            style={[styles.button, loading && styles.buttonLoading]}
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color="#FFF" />
             ) : (
               <Text style={styles.buttonText}>Cadastrar</Text>
             )}
@@ -187,98 +215,118 @@ export default function CadastroProfessor() {
   );
 }
 
-// Mantenha os mesmos estilos da versão original
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#007bdb',
+    backgroundColor: '#F5F7FB',
   },
-  scrollContent: {
-    paddingTop: 60,
-    paddingBottom: 40,
+  scrollContainer: {
+    flexGrow: 1,
   },
-  form: {
-    backgroundColor: '#0455BF',
-    marginHorizontal: 24,
-    borderRadius: 16,
-    padding: 20,
+  header: {
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: '#FFF',
     textAlign: 'center',
-    marginBottom: 16,
-    color: '#fff',
+  },
+  formContainer: {
+    paddingHorizontal: 25,
+    paddingBottom: 30,
   },
   label: {
-    color: '#fff',
-    marginBottom: 4,
-    marginTop: 10,
     fontSize: 16,
+    color: '#2D3748',
+    marginBottom: 8,
+    fontWeight: '500',
   },
   input: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 8,
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 20,
+    fontSize: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  escolaContainer: {
+  dropdownContainer: {
+    marginBottom: 20,
     zIndex: 1,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
     overflow: 'hidden',
   },
-  inputCombinado: {
+  dropdownInput: {
     flex: 1,
-    padding: 10,
+    padding: 15,
+    fontSize: 16,
   },
   dropdownButton: {
-    padding: 10,
-    borderLeftWidth: 1,
-    borderLeftColor: '#ccc',
+    padding: 15,
+    backgroundColor: '#F5F7FB',
   },
-  dropdown: {
+  dropdownList: {
     maxHeight: 200,
-    borderWidth: 1,
-    borderColor: '#aaa',
-    borderRadius: 8,
+    backgroundColor: '#FFF',
+    borderRadius: 10,
     marginTop: 5,
-    backgroundColor: '#fff',
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  listaDropdown: {
-    paddingHorizontal: 10,
-  },
-  itemDropdown: {
-    paddingVertical: 12,
+  dropdownItem: {
+    padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#F1F1F1',
   },
-  carregando: {
+  dropdownItemText: {
+    fontSize: 16,
+    color: '#2D3748',
+  },
+  loadingIndicator: {
     marginVertical: 10,
   },
   button: {
-    backgroundColor: '#00b0ff',
-    paddingVertical: 14,
-    borderRadius: 8,
+    backgroundColor: '#6E48AA',
+    padding: 16,
+    borderRadius: 10,
     alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 20,
-  },
-  buttonLoading: {
-    backgroundColor: '#0077cc',
+    shadowColor: '#6E48AA',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#FFF',
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });

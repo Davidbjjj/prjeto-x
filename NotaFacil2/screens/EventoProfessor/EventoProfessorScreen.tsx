@@ -3,14 +3,14 @@ import axios from 'axios';
 import * as DocumentPicker from 'expo-document-picker';
 import React, { useState } from 'react';
 import {
-  Alert,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 export default function CriarEvento() {
@@ -116,7 +116,7 @@ export default function CriarEvento() {
 
     setIsLoading(true);
     try {
-      const response = await axios.post('https://backnotas.onrender.com/eventos', evento);
+      const response = await axios.post('http://localhost:8080/eventos', evento);
       console.log('Evento criado:', response.data);
       Alert.alert('Sucesso', 'Evento criado com sucesso!');
       

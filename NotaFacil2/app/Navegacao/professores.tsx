@@ -1,31 +1,68 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { jwtDecode } from 'jwt-decode';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { addPermittedEmail } from '../../services/escolaService';
 import { deleteProfessor, getAllProfessores, Professor } from '../../services/professorService';
+
+interface DecodedToken {
+  sub: string;  // email do usuário
+  role?: string;
+}
 
 export default function ProfessorListScreen() {
   const [professores, setProfessores] = useState<Professor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [nomeEscola, setNomeEscola] = useState('');
 
   const router = useRouter();
-  const params = useLocalSearchParams();
 
+  // Busca dados do usuário para obter o nome da escola (data.nome)
+  const fetchUserData = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) throw new Error('No token found');
+
+      const decoded = jwtDecode<DecodedToken>(token);
+      if (!decoded || !decoded.sub) throw new Error('Invalid token');
+
+      const response = await fetch(`http://localhost:8080/usuarios/email/${decoded.sub}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch user data');
+
+      const data = await response.json();
+      // Ajuste aqui: pegar o nome da escola do campo 'nome'
+      setNomeEscola(data.email || '');
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
+
+  // Busca todos os professores
   const fetchProfessores = async () => {
     try {
       setLoading(true);
-      const data = await getAllProfessores(); 
+      const data = await getAllProfessores();
       setProfessores(data);
       setError('');
     } catch (err) {
@@ -38,11 +75,12 @@ export default function ProfessorListScreen() {
   };
 
   useEffect(() => {
+    fetchUserData();
     fetchProfessores();
   }, []);
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       fetchProfessores();
     }, [])
   );
@@ -68,7 +106,7 @@ export default function ProfessorListScreen() {
           onPress: async () => {
             try {
               await deleteProfessor(professor.id);
-              setProfessores(prev => prev.filter(p => p.id !== professor.id));
+              setProfessores((prev) => prev.filter((p) => p.id !== professor.id));
               Alert.alert('Sucesso', 'Professor excluído com sucesso!');
             } catch (err) {
               console.error('Erro ao excluir professor:', err);
@@ -80,23 +118,46 @@ export default function ProfessorListScreen() {
     );
   };
 
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const handleAddEmail = async () => {
+    if (!email.trim()) {
+      Alert.alert('Erro', 'Por favor, insira um email válido');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert('Erro', 'Por favor, insira um email válido');
+      return;
+    }
+
+    if (!nomeEscola) {
+      Alert.alert('Erro', 'Não foi possível identificar a escola');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await addPermittedEmail(nomeEscola, email);
+      Alert.alert('Sucesso', 'Email adicionado com sucesso!');
+      setModalVisible(false);
+      setEmail('');
+    } catch (err) {
+      console.error('Erro ao adicionar email:', err);
+      Alert.alert('Erro', 'Não foi possível adicionar o email');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007BFF" />
         <Text style={styles.loadingText}>Carregando professores...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <MaterialIcons name="error" size={48} color="#FF6B6B" />
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={fetchProfessores}>
-          <Text style={styles.retryButtonText}>Tentar Novamente</Text>
-        </TouchableOpacity>
       </View>
     );
   }
@@ -107,15 +168,9 @@ export default function ProfessorListScreen() {
         data={professores}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#007BFF']}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#007BFF']} />
         }
-        ListHeaderComponent={
-          <Text style={styles.header}>Professores</Text>
-        }
+        ListHeaderComponent={<Text style={styles.header}>Professores</Text>}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.leftSection}>
@@ -127,20 +182,14 @@ export default function ProfessorListScreen() {
             <View style={styles.mainDividerLine} />
 
             <View style={styles.rightSection}>
-              <Text style={styles.sectionTitle}> </Text>
               <Text style={styles.value}>{item.email}</Text>
               <Text style={styles.value}>
-                {item.disciplinas?.length > 0
-                  ? item.disciplinas.join(', ')
-                  : 'Nenhuma disciplina'}
+                {item.disciplinas?.length > 0 ? item.disciplinas.join(', ') : 'Nenhuma disciplina'}
               </Text>
             </View>
 
             <View style={styles.actionsContainer}>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => handleEdit(item)}
-              >
+              <TouchableOpacity style={styles.actionButton} onPress={() => handleEdit(item)}>
                 <MaterialIcons name="edit" size={18} color="#007BFF" />
               </TouchableOpacity>
 
@@ -163,11 +212,135 @@ export default function ProfessorListScreen() {
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
+
+      {/* Botão flutuante para adicionar email */}
+      <TouchableOpacity style={styles.addEmailButton} onPress={() => setModalVisible(true)}>
+        <MaterialIcons name="email" size={24} color="#fff" />
+      </TouchableOpacity>
+
+      {/* Modal para adicionar email */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+          setEmail('');
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Adicionar Email Permitido</Text>
+            <Text style={styles.modalSubtitle}>Escola: {nomeEscola || 'Carregando...'}</Text>
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Digite o email do professor"
+              placeholderTextColor="#999"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setModalVisible(false);
+                  setEmail('');
+                }}
+                disabled={isSubmitting}
+              >
+                <Text style={{ color: '#333', fontWeight: 'bold' }}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.submitButton]}
+                onPress={handleAddEmail}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.modalButtonText}>Adicionar</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
+
 const styles = StyleSheet.create({
+  addEmailButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+    backgroundColor: '#007BFF',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#333',
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    padding: 12,
+    marginBottom: 20,
+    fontSize: 16,
+  },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: '#f0f0f0',
+  },
+  submitButton: {
+    backgroundColor: '#007BFF',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
@@ -203,12 +376,6 @@ const styles = StyleSheet.create({
   rightSection: {
     flex: 1,
     paddingLeft: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    color: '#999',
-    fontWeight: 'bold',
-    marginBottom: 8,
   },
   professorNome: {
     fontSize: 16,
@@ -286,28 +453,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    padding: 32,
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#FF6B6B',
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 15,
     textAlign: 'center',
-    marginVertical: 16,
-  },
-  retryButton: {
-    backgroundColor: '#007BFF',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });

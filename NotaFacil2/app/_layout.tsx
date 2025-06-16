@@ -1,58 +1,64 @@
-import { Slot, Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-
-const InitialLayout = () => {
-  const { token, isAuthenticated, userRole } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
-
-  useEffect(() => {
-    const inAuthGroup = segments[0] === 'login';
-
-    if (!isAuthenticated && !inAuthGroup) {
-      router.replace('/login/LoginScreen');
-    } else if (isAuthenticated && inAuthGroup) {
-      router.replace('/');
-    }
-  }, [isAuthenticated, segments]);
-
-  return <Slot />;
-};
+// app/_layout.tsx
+import { Slot } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  Keyboard,
+  Platform,
+  StyleSheet,
+  View
+} from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RootLayout() {
-  const { isAuthenticated, userRole } = useAuth();
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const hideSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   return (
-    <Stack>
-      <Stack.Screen 
-        name="(tabs)" 
-        options={{ 
-          headerShown: false,
-          gestureEnabled: false
-        }} 
-      />
-      <Stack.Screen 
-        name="(auth)" 
-        options={{ 
-          headerShown: false,
-          gestureEnabled: false
-        }} 
-      />
-      <Stack.Screen 
-        name="perfil" 
-        options={{ 
-          presentation: 'modal',
-          headerShown: false 
-        }} 
-      />
-      <Stack.Screen 
-        name="sobre" 
-        options={{ 
-          presentation: 'modal',
-          headerShown: false 
-        }} 
-      />
-    </Stack>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Solução 1: Usando paddingBottom dinâmico */}
+        <View style={[styles.container, { paddingBottom: keyboardHeight }]}>
+          <Slot />
+        </View>
+
+        {/* Solução 2: Alternativa com KeyboardAvoidingView (escolha uma das soluções) */}
+        {/* <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.select({ ios: 0, android: 0 })}
+          style={styles.container}
+        >
+          <Slot />
+        </KeyboardAvoidingView> */}
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F5F7FB',
+  },
+  container: {
+    flex: 1,
+  },
+});

@@ -6,7 +6,8 @@ type AuthContextType = {
   token: string | null;
   isAuthenticated: boolean;
   userRole: string | null;
-  login: (token: string) => Promise<void>;
+  userData: any | null;  // Pode tipar melhor conforme seu user
+  login: (token: string, user: any) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userData, setUserData] = useState<any | null>(null);
 
   const getRoleFromToken = (jwt: string): string | null => {
     try {
@@ -35,43 +37,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    const loadToken = async () => {
+    const loadAuth = async () => {
       const storedToken = await AsyncStorage.getItem('authToken');
+      const storedUser = await AsyncStorage.getItem('userData');
+
       console.log('Token carregado:', storedToken ? 'Existe' : 'Não existe');
-      
+      console.log('UserData carregado:', storedUser ? 'Existe' : 'Não existe');
+
       if (storedToken) {
         setToken(storedToken);
         const role = getRoleFromToken(storedToken);
         setUserRole(role);
-        console.log('Role final:', role);
+      }
+
+      if (storedUser) {
+        setUserData(JSON.parse(storedUser));
       }
     };
 
-    loadToken();
+    loadAuth();
   }, []);
 
-  const login = async (newToken: string) => {
+  const login = async (newToken: string, user: any) => {
     await AsyncStorage.setItem('authToken', newToken);
+    await AsyncStorage.setItem('userData', JSON.stringify(user));
+
     setToken(newToken);
+    setUserData(user);
+
     const role = getRoleFromToken(newToken);
     setUserRole(role);
+
     console.log('Login com role:', role);
   };
 
   const logout = async () => {
     await AsyncStorage.removeItem('authToken');
+    await AsyncStorage.removeItem('userData');
+
     setToken(null);
     setUserRole(null);
+    setUserData(null);
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      token, 
-      isAuthenticated: !!token, 
-      userRole, 
-      login, 
-      logout 
-    }}>
+    <AuthContext.Provider
+      value={{
+        token,
+        isAuthenticated: !!token,
+        userRole,
+        userData,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

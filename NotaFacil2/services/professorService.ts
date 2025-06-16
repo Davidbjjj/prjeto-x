@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://backnotas.onrender.com';
+const API_BASE_URL = 'http://localhost:8080';
 
 export interface Professor {
   senha: string;

@@ -32,7 +32,7 @@ export default function CadastroProfessor() {
   const carregarEscolas = async () => {
     try {
       setCarregandoEscolas(true);
-      const response = await axios.get('https://backnotas.onrender.com/escolas');
+      const response = await axios.get('http://localhost:8080/escolas');
       setEscolas(response.data);
       setEscolasFiltradas(response.data);
     } catch (error) {
@@ -76,7 +76,7 @@ export default function CadastroProfessor() {
     setLoading(true);
 
     try {
-      await axios.post('https://backnotas.onrender.com/professores', {
+      await axios.post('http://localhost:8080/professores', {
         nome,
         email,
         senha,

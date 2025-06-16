@@ -4,15 +4,15 @@ import { useNavigation } from "@react-navigation/native";
 import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  ImageSourcePropType,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Image,
+    ImageSourcePropType,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native";
 
 interface UserData {
@@ -80,7 +80,7 @@ export default function Perfil() {
 
         // 4. Fazer requisição para obter dados do usuário
         const response = await fetch(
-          `https://backnotas.onrender.com/usuarios/email/${encodeURIComponent(tokenData.email)}`, 
+          `http://localhost:8080/usuarios/email/${encodeURIComponent(tokenData.email)}`, 
           {
             headers: {
               'Authorization': `Bearer ${token}`
