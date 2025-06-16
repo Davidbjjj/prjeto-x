@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { Disciplina } from '../types/disciplina';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'https://projeto-x-cg6v.onrender.com';
 
 export async function getDisciplinas(): Promise<Disciplina[]> {
   try {

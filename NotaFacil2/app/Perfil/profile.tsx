@@ -33,7 +33,7 @@ export default function PerfilScreen() {
         const decoded = decodeToken(token);
         if (!decoded) throw new Error('Invalid token');
 
-        const response = await fetch(`http://localhost:8080/usuarios/email/${decoded.sub}`, {
+        const response = await fetch(`https://projeto-x-cg6v.onrender.com/usuarios/email/${decoded.sub}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

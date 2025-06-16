@@ -57,9 +57,9 @@ export default function FormEscola() {
     };
 
     try {
-      await axios.post('http://localhost:8080/escolas', escola);
+      await axios.post('https://projeto-x-cg6v.onrender.com/escolas', escola);
 
-      const loginResponse = await axios.post('http://localhost:8080/escolas', {
+      const loginResponse = await axios.post('https://projeto-x-cg6v.onrender.com/escolas', {
         email,
         senha,
       });

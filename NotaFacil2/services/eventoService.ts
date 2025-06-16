@@ -3,11 +3,63 @@ import axios from 'axios';
 import { Evento } from '../types/evento';
 
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'https://projeto-x-cg6v.onrender.com';
 
+
+export async function getEventoPorId(eventoId: string): Promise<Evento> {
+  try {
+    const response = await axios.get<Evento>(`${API_BASE_URL}/eventos/${eventoId}`);
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error('Erro na requisição:', {
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+      throw new Error(error.response?.data?.message || 'Erro ao carregar evento');
+    }
+    if (error instanceof Error) {
+      console.error('Erro ao buscar evento:', error.message);
+      throw error;
+    }
+    console.error('Erro desconhecido ao buscar evento');
+    throw new Error('Erro desconhecido ao carregar evento');
+  }
+}
+
+export async function entregarEvento(
+  eventoId: string,
+  entrega: {
+    comentarioEntrega: string;
+    arquivosEntrega: string[];
+    statusEntrega: string;
+  }
+): Promise<void> {
+  try {
+    await axios.post(`${API_BASE_URL}/eventos/${eventoId}/entregas`, entrega, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error('Erro na requisição:', {
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+      throw new Error(error.response?.data?.message || 'Erro ao enviar entrega');
+    }
+    if (error instanceof Error) {
+      console.error('Erro ao enviar entrega:', error.message);
+      throw error;
+    }
+    console.error('Erro desconhecido ao enviar entrega');
+    throw new Error('Erro desconhecido ao enviar entrega');
+  }
+}
 export async function getEventosPorAluno(email: string): Promise<Evento[]> {
   try {
-    const response = await axios.get<Evento[]>(`${API_BASE_URL}/eventos/aluno/${email}`);
+    const response = await axios.get<Evento[]>(`${API_BASE_URL}/eventos/aluno/email/${email}`);
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {

@@ -4,16 +4,16 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { jwtDecode } from 'jwt-decode';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Modal,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Modal,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { addPermittedEmail } from '../../services/escolaService';
 import { deleteProfessor, getAllProfessores, Professor } from '../../services/professorService';
@@ -44,7 +44,7 @@ export default function ProfessorListScreen() {
       const decoded = jwtDecode<DecodedToken>(token);
       if (!decoded || !decoded.sub) throw new Error('Invalid token');
 
-      const response = await fetch(`http://localhost:8080/usuarios/email/${decoded.sub}`, {
+      const response = await fetch(`https://projeto-x-cg6v.onrender.com/usuarios/email/${decoded.sub}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

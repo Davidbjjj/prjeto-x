@@ -32,7 +32,7 @@ export default function CadastroProfessor() {
   const carregarEscolas = async () => {
     try {
       setCarregandoEscolas(true);
-      const response = await axios.get('http://localhost:8080/escolas');
+      const response = await axios.get('https://projeto-x-cg6v.onrender.com/escolas');
       setEscolas(response.data);
       setEscolasFiltradas(response.data);
     } catch (error) {
@@ -76,7 +76,7 @@ export default function CadastroProfessor() {
     setLoading(true);
 
     try {
-      await axios.post('http://localhost:8080/professores', {
+      await axios.post('https://projeto-x-cg6v.onrender.com/professores', {
         nome,
         email,
         senha,

@@ -80,7 +80,7 @@ export default function Perfil() {
 
         // 4. Fazer requisição para obter dados do usuário
         const response = await fetch(
-          `http://localhost:8080/usuarios/email/${encodeURIComponent(tokenData.email)}`, 
+          `https://projeto-x-cg6v.onrender.com/usuarios/email/${encodeURIComponent(tokenData.email)}`, 
           {
             headers: {
               'Authorization': `Bearer ${token}`

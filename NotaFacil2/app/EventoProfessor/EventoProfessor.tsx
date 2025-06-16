@@ -116,7 +116,7 @@ export default function CriarEvento() {
 
     setIsLoading(true);
     try {
-      const response = await axios.post('http://localhost:8080/eventos', evento);
+      const response = await axios.post('https://projeto-x-cg6v.onrender.com/eventos', evento);
       console.log('Evento criado:', response.data);
       Alert.alert('Sucesso', 'Evento criado com sucesso!');
       

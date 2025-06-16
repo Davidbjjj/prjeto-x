@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'https://projeto-x-cg6v.onrender.com';
 
 export async function addPermittedEmail(escolaNome: string, email: string): Promise<string> {
   try {

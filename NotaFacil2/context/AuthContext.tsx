@@ -22,6 +22,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userData, setUserData] = useState<any | null>(null);
+  const getRoleFromEmail = (jwt: string): string | null => {
+    try {
+      const decoded = jwtDecode<JwtPayload>(jwt);
+      console.log('=== TOKEN DECODIFICADO ===');
+      console.log('Token completo:', JSON.stringify(decoded, null, 2));
+      console.log('Role encontrado:', decoded.email);
+      return decoded.role || null;
+    } catch (error) {
+      console.error('Erro ao decodificar token:', error);
+      return null;
+    }
+  };
 
   const getRoleFromToken = (jwt: string): string | null => {
     try {
@@ -96,4 +108,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = (storedToken: string) => useContext(AuthContext);
